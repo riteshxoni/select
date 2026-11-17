@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RS SignX India - Services Selector</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--text:#1d2330;--muted:#6b7280;--accent:#0b7a4b;--line:#e3e6ec}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121417;--card:#1c2026;--text:#e8ebf0;--muted:#9aa3b2;--accent:#2fbf7f;--line:#2b313b}}
+:root[data-theme="dark"]{--bg:#121417;--card:#1c2026;--text:#e8ebf0;--muted:#9aa3b2;--accent:#2fbf7f;--line:#2b313b}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);padding-bottom:90px}
+header{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--line);padding:14px 16px;z-index:5}
+header h1{margin:0;font-size:18px}
+header p{margin:4px 0 10px;font-size:13px;color:var(--muted)}
+.search{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font-size:15px}
+main{max-width:800px;margin:0 auto;padding:12px}
+details{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+summary{padding:12px 14px;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+summary small{color:var(--muted);font-weight:400}
+.items{padding:6px 14px 12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:4px 12px}
+.items label{display:flex;gap:8px;align-items:flex-start;font-size:14px;padding:4px 0;cursor:pointer}
+.items input{margin-top:3px;accent-color:var(--accent)}
+.bar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;justify-content:space-between;align-items:center}
+.bar span{font-size:14px;color:var(--muted)}
+.btns{display:flex;gap:8px}
+button{border:0;border-radius:8px;padding:10px 14px;font-size:14px;cursor:pointer}
+.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.wa{background:#25d366;color:#fff;font-weight:600}
+.wa:disabled{opacity:.5;cursor:default}
+.add{display:flex;gap:6px;margin-top:8px}
+.add input{flex:1;min-width:0;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font-size:14px}
+.add button{background:var(--accent);color:#fff;font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <h1>RS SignX India - Services Selector</h1>
+  <p>Jo services chahiye unhe select karein, phir WhatsApp par bhejein.</p>
+  <input id="search" class="search" type="search" placeholder="Search karein (jaise: LED, gantry, vinyl)...">
+  <div class="add">
+    <input id="addCat" list="catList" placeholder="Category (existing ya naya)">
+    <input id="addName" placeholder="Nayi service ka naam">
+    <button id="addBtn">Add</button>
+    <datalist id="catList"></datalist>
+  </div>
+</header>
+<main id="list"></main>
+<div class="bar">
+  <span id="count">0 selected</span>
+  <div class="btns">
+    <button class="ghost" id="clear">Clear</button>
+    <button class="wa" id="send" disabled>WhatsApp par bhejein</button>
+  </div>
+</div>
+<script>
+const DATA = [
+ ["Road & Traffic Signage", "Regulatory Traffic Sign Boards|STOP, No Entry, No Parking|Speed Limit, One Way, Give Way|Warning Traffic Sign Boards|Sharp Curve, School Ahead|Narrow Bridge, Slippery Road|Informatory Sign Boards|Hospital, Petrol Pump, Parking|Tourist Places, Route Information|Highway Sign Boards|Direction Boards|Distance Boards|Lane Direction Boards|Overhead Gantry Sign Boards|Highway Gantry|Expressway Gantry|Toll Plaza Gantry|Cantilever Sign Boards|Roadside Cantilever|Highway Direction Cantilever|Temporary Traffic Sign Boards|Road Work, Diversion|Lane Closed, Men at Work|Construction Site Signage|Safety Warning Boards|Project Information Boards|Railway Crossing Signage|Airport Road Signage|School Zone Signage|Industrial Area Signage|Parking Signage|Kilometer Stones|Highway Route Markers|Street Name Boards|Emergency Information Boards|Pedestrian Crossing Signage"],
+ ["Road Safety Products", "Traffic Cones|PVC Cones|Rubber Cones|Reflective Cones|Road Studs|Solar Road Studs|Aluminium Road Studs|Plastic Road Studs|Road Delineators|Flexible Delineators|Spring Posts|Reflective Delineators|Speed Breakers|Rubber Speed Breakers|Plastic Speed Breakers|Crash Barriers|W-Beam Barriers|Thrie-Beam Barriers|Traffic Barricades|Metal Barricades|Plastic Barricades|Water-Filled Barriers|Convex Safety Mirrors|Traffic Drums|Road Channelizers|Road Dividers|Traffic Bollards|Parking Locks|Wheel Stoppers|Cable Protectors|Traffic Warning Lights|Solar Blinkers|Traffic Batons|Reflective Safety Tapes|Safety Fencing|Pedestrian Safety Barriers"],
+ ["Road Marking & Pavement Solutions", "Thermoplastic Road Marking|Highway Lane Marking|Zebra Crossing|Cold Plastic Road Marking|Road Marking Paint|Glass Beads Supply|Reflective Road Marking|Parking Lot Marking|Airport Runway Marking|Industrial Floor Marking|Warehouse Floor Marking|Road Marking Machines|Road Marking Applicators|Road Marking Removal|Tactile Tiles|Tactile Strips|Tactile Studs|Braille Maps|Directional Floor Markings|Road Marking Maintenance"],
+ ["Reflective Materials & Raw Materials", "Engineering Grade Reflective Sheets|High Intensity Prismatic Sheets|Diamond Grade Reflective Sheets|Micro Prismatic Reflective Sheets|Fluorescent Reflective Sheets|Reflective Vinyl|Reflective Safety Tape|Photoluminescent Sheets|Glow-in-the-Dark Materials|Aluminium Sheets|ACP Sheets|GI Sheets|MS Sheets|Stainless Steel Sheets|Acrylic Sheets|PVC Sheets|Sunboard Sheets|Sign Board Aluminium Blanks|Sign Mounting Hardware|Sign Poles and Brackets|Clamps and Fasteners|Reflective Material Cutting|Reflective Vinyl Plotter Cutting"],
+ ["Commercial & Outdoor Signage", "LED Sign Boards|Front-Lit LED|Back-Lit LED|Glow Sign Boards|Acrylic Sign Boards|3D Letter Signage|Acrylic Letters|Metal Letters|Stainless Steel Letters|Channel Letter Signage|Halo-Lit Channel Letters|ACP Sign Boards|Neon Sign Boards|LED Neon Flex Signage|Flex Sign Boards|Metal Sign Boards|Wooden Sign Boards|Brass Signage|Pylon Signage|Monument Signage|Totem Signage|Rooftop Signage|Building Facade Signage|Shop Front Signage|Blade Signage|Pole Signage|Mall Signage|Restaurant Outdoor Signage|Showroom Signage|Petrol Pump Signage|Corporate Building Signage"],
+ ["Indoor & Institutional Signage", "Reception Logo Boards|Office Name Plates|Door Name Plates|Room Number Plates|Department Sign Boards|Floor Directory Boards|Wayfinding Signage|Lobby Signage|Wall Graphics|Glass Branding|Frosted Glass Films|Fire Exit Signage|Emergency Exit Signage|Photoluminescent Signage|Braille Signage|Tactile Maps|Hospital Signage|School Signage|College Signage|Hotel Signage|Factory Signage|Warehouse Signage|Restaurant Indoor Signage|Office Safety Signage|Conference Room Signage"],
+ ["Digital & Electronic Signage", "Indoor LED Displays|Outdoor LED Displays|LED Video Walls|LED Scrolling Displays|Electronic Message Boards|Variable Message Signs (VMS)|Digital Standee Displays|LCD Advertising Displays|Touch Screen Kiosks|Digital Menu Boards|Smart Information Displays|Token Display Systems|Queue Management Displays|Electronic Traffic Information Boards|Digital Price Displays|Interactive Information Kiosks|LED Display Installation|LED Display Repair & Maintenance"],
+ ["Printing & Graphics Services", "Flex Printing|Vinyl Printing|Eco-Solvent Printing|UV Printing|Latex Printing|Backlit Flex Printing|One-Way Vision Printing|Reflective Vinyl Printing|Sunboard Printing|Foam Board Printing|Canvas Printing|Fabric Printing|Poster Printing|Banner Printing|Hoarding Printing|Wall Graphics Printing|Floor Graphics Printing|Window Graphics Printing|Vehicle Graphics Printing|Cut Vinyl Lettering|Plotter Cutting|Lamination|Mounting|Large Format Printing|Custom Sticker Printing|Label Printing"],
+ ["Exhibition, Events & Display Products", "Roll-up Standee|X-Banner Standee|L-Banner Standee|Promotional Standee|Exhibition Stall|Exhibition Backdrop|Fabric Display|Modular Display System|Product Display Stand|Acrylic Display Stand|Retail Display Counter|Brochure Holders|Menu Stands|Tabletop Displays|Promotional Flags|Feather Flags|Gazebo Branding|Event Branding|Kiosk Fabrication|Trade Show Branding|Stage Backdrops|Event Direction Boards"],
+ ["Corporate Printing & Merchandise", "Business Cards|Letterheads|Envelopes|ID Cards|Certificates|Brochures|Flyers|Product Catalogues|Posters|Invitations|Calendars|Diaries|Notebooks|Custom Stickers|Product Labels|Packaging Boxes|Paper Bags|Custom T-Shirts|Custom Caps|Printed Mugs|Promotional Pens|Keychains|Corporate Gifts|Promotional Kits|Office Stationery"],
+ ["Vehicle & Fleet Branding", "Car Branding|Truck Branding|Trailer Branding|Bus Branding|Auto Rickshaw Branding|Bike Graphics|Bike Decals|Full Vehicle Wrapping|Partial Vehicle Wrapping|Reflective Safety Strips|Fleet Identification|Logistics Vehicle Branding|Commercial Vehicle Graphics|Vehicle Number Stickers|Vehicle Advertising|Fleet Safety Markings"],
+ ["Fabrication & Infrastructure", "MS Fabrication|GI Fabrication|Aluminium Fabrication|Stainless Steel Fabrication|Highway Gantry Fabrication|Cantilever Structure Fabrication|Sign Poles Manufacturing|Pylon Structure Fabrication|ACP Cladding Work|Metal Framework|Laser Cutting|CNC Routing|Acrylic Laser Cutting|Metal Welding|Powder Coating|Roadside Lighting Poles|High Mast Poles|Street Name Poles|Traffic Signal Poles|Chain Link Fencing|Solar Street Light Structures|Custom Metal Structures|Sign Mounting Structures"],
+ ["Signage Design & Creative Services", "Logo Design|Signboard Design|Traffic Sign Design|Highway Sign Design|Gantry Layout Design|ACP Signage Design|LED Signage Design|3D Letter Design|Shop Front Design|Office Signage Design|Wayfinding Design|Vehicle Branding Design|Exhibition Stall Design|Banner Design|Brochure Design|Product Catalogue Design|Printing Artwork Preparation|Vector Artwork Conversion|CNC Cutting File Preparation|Technical Drawing Preparation|Signage Mockup and Visualization|Branding Guidelines Design"],
+ ["Signage Installation & Site Services", "Site Survey|Site Measurement|Signboard Installation|LED Sign Installation|ACP Sign Installation|3D Letter Installation|Gantry Installation|Cantilever Installation|Pole Sign Installation|Highway Sign Installation|Indoor Sign Installation|Glass Film Installation|Vehicle Graphics Installation|Road Stud Installation|Speed Breaker Installation|Traffic Barrier Installation|Road Marking Installation|Foundation Work|Electrical Installation|Crane and Lifting Coordination"],
+ ["Repair, Maintenance & Replacement", "LED Signboard Repair|Glow Sign Repair|Acrylic Sign Repair|Channel Letter Repair|Neon Sign Repair|Digital Display Repair|LED Module Replacement|Power Supply Replacement|Signboard Repainting|Reflective Sheet Replacement|Traffic Sign Replacement|Gantry Maintenance|Pole Maintenance|ACP Panel Replacement|Vinyl Replacement|Vehicle Graphics Replacement|Signboard Cleaning|Annual Maintenance Contracts|Electrical Maintenance|Safety Inspection"],
+ ["Manufacturing & Custom Production", "Traffic Sign Manufacturing|Reflective Sign Manufacturing|Aluminium Sign Manufacturing|Acrylic Sign Manufacturing|ACP Sign Manufacturing|LED Sign Manufacturing|3D Letter Manufacturing|Channel Letter Manufacturing|Metal Sign Manufacturing|Pylon Sign Manufacturing|Gantry Structure Manufacturing|Traffic Cone Manufacturing (subject to setup)|Road Safety Product Manufacturing|Custom Display Manufacturing|CNC Product Manufacturing|Laser-Cut Product Manufacturing|Custom Fabrication|OEM Product Manufacturing|Private Label Manufacturing|Bulk Custom Production"],
+ ["Product Supply, Trading & Distribution", "Road Sign Supply|Road Safety Product Supply|Reflective Sheet Supply|Aluminium Sheet Supply|ACP Sheet Supply|Acrylic Sheet Supply|LED Components Supply|Printing Material Supply|Road Marking Material Supply|Traffic Equipment Supply|Signage Hardware Supply|Fabrication Material Supply|Wholesale Supply|Retail Supply|Bulk Supply|Dealer Supply|Distributor Supply|Project-Based Supply|OEM Supply|Import and Export Sourcing"],
+ ["Highway & Infrastructure Project Solutions", "Highway Signage Projects|Expressway Signage Projects|Toll Plaza Signage|Overhead Gantry Projects|Road Safety Projects|Road Marking Projects|Crash Barrier Projects|Traffic Management Projects|Highway Kilometer Stone Supply|Roadside Signage Installation|Highway Direction Signage|Airport Road Signage|Railway Signage|Industrial Road Signage|Complete Highway Signage Packages"],
+ ["Industry-Specific Signage Solutions", "Government Signage|Highway & Road Contractor Signage|Construction Site Signage|Hospital Signage|School & College Signage|Hotel & Resort Signage|Restaurant Signage|Shopping Mall Signage|Retail Store Signage|Corporate Office Signage|Factory Signage|Warehouse Signage|Real Estate Signage|Petrol Pump Signage|Automobile Showroom Signage|Railway & Metro Signage|Airport Signage|Parking Facility Signage|Sports Stadium Signage|Exhibition & Event Signage"],
+ ["Business & Project Management Services", "Complete Signage Project Management|Turnkey Signage Solutions|Project Cost Estimation|Bill of Quantities (BOQ) Preparation|Technical Specification Preparation|Material Selection Assistance|Supplier Coordination|Manufacturing Coordination|Installation Coordination|Quality Inspection|Project Documentation|Delivery Coordination|Maintenance Planning|Bulk Order Management|Government Tender Support|Contractor Supply Coordination|International Project Supply"],
+ ["International Business & Export", "International Product Supply|Export of Road Signs|Export of Road Safety Products|Reflective Material Export|Signage Material Export|Bulk B2B Export|International Distributor Supply|OEM Export Supply|Custom Product Export|International Project Procurement|Import Sourcing|Global Supplier Coordination|International Quotation Services|Export Documentation Coordination"],
+ ["Additional Business Opportunities", "Signage Equipment Trading|Printing Machine Supply|Vinyl Cutting Plotter Supply|CNC Router Supply|Laser Engraving Machine Supply|Large Format Printer Supply|Lamination Machine Supply|LED Display Components Supply|Signage Installation Tools Supply|Reflective Material Processing Equipment|Road Marking Machine Supply|Safety Equipment Supply|Signage Raw Material Wholesale|Printing Consumables Supply|Machine Repair & Technical Support"]
+];
+
+try{(JSON.parse(localStorage.getItem('rsx_custom')||'[]')).forEach(([cat,name])=>{let c=DATA.find(d=>d[0]===cat);if(!c){c=[cat,''];DATA.push(c);}c[1]=c[1]?c[1]+'|'+name:name;});}catch(e){}
+const list = document.getElementById('list');
+const countEl = document.getElementById('count');
+const sendBtn = document.getElementById('send');
+const searchEl = document.getElementById('search');
+const selected = new Map(); // key -> {cat, name}
+
+DATA.forEach(([cat, items], ci) => {
+  const det = document.createElement('details');
+  const names = items.split('|');
+  det.innerHTML = `<summary>${cat} <small>${names.length} items</small></summary>`;
+  const wrap = document.createElement('div');
+  wrap.className = 'items';
+  names.forEach((name, ii) => {
+    const key = ci + '-' + ii;
+    const lab = document.createElement('label');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.dataset.key = key;
+    cb.addEventListener('change', () => {
+      if (cb.checked) selected.set(key, {cat, name});
+      else selected.delete(key);
+      update();
+    });
+    lab.append(cb, document.createTextNode(name));
+    wrap.appendChild(lab);
+  });
+  det.appendChild(wrap);
+  list.appendChild(det);
+});
+
+function update() {
+  countEl.textContent = selected.size + ' selected';
+  sendBtn.disabled = selected.size === 0;
+}
+
+document.getElementById('clear').addEventListener('click', () => {
+  selected.clear();
+  document.querySelectorAll('input[type=checkbox]').forEach(c => c.checked = false);
+  update();
+});
+
+searchEl.addEventListener('input', () => {
+  const q = searchEl.value.trim().toLowerCase();
+  document.querySelectorAll('details').forEach(d => {
+    let any = false;
+    d.querySelectorAll('label').forEach(l => {
+      const show = !q || l.textContent.toLowerCase().includes(q);
+      l.style.display = show ? '' : 'none';
+      if (show) any = true;
+    });
+    d.style.display = any ? '' : 'none';
+    if (q && any) d.open = true;
+  });
+});
+
+sendBtn.addEventListener('click', () => {
+  const byCat = {};
+  selected.forEach(({cat, name}) => {
+    (byCat[cat] = byCat[cat] || []).push(name);
+  });
+  let msg = 'RS SignX India - Mujhe ye services chahiye:\n';
+  Object.keys(byCat).forEach(cat => {
+    msg += '\n*' + cat + '*\n';
+    byCat[cat].forEach(n => msg += '- ' + n + '\n');
+  });
+  msg += '\nKripya quotation/rate bhejein. Dhanyavaad.';
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+});
+
+function makeLabel(ci,ii,cat,name){
+  const key=ci+'-'+ii;
+  const lab=document.createElement('label');
+  const cb=document.createElement('input');
+  cb.type='checkbox';
+  cb.dataset.key=key;
+  cb.addEventListener('change',()=>{ if(cb.checked) selected.set(key,{cat,name}); else selected.delete(key); update(); });
+  lab.append(cb, document.createTextNode(name));
+  return lab;
+}
+
+const catList=document.getElementById('catList');
+DATA.forEach(d=>{const o=document.createElement('option');o.value=d[0];catList.appendChild(o);});
+
+document.getElementById('addBtn').addEventListener('click',()=>{
+  const cat=document.getElementById('addCat').value.trim();
+  const name=document.getElementById('addName').value.trim();
+  if(!cat||!name) return;
+  try{
+    const saved=JSON.parse(localStorage.getItem('rsx_custom')||'[]');
+    saved.push([cat,name]);
+    localStorage.setItem('rsx_custom',JSON.stringify(saved));
+  }catch(e){}
+  let ci=DATA.findIndex(d=>d[0]===cat);
+  if(ci<0){
+    DATA.push([cat,'']);
+    ci=DATA.length-1;
+    const det=document.createElement('details');
+    det.open=true;
+    det.innerHTML=`<summary>${cat} <small>custom</small></summary><div class="items"></div>`;
+    list.appendChild(det);
+  }
+  DATA[ci][1]=DATA[ci][1]?DATA[ci][1]+'|'+name:name;
+  const ii=DATA[ci][1].split('|').length-1;
+  const det=list.querySelectorAll('details')[ci];
+  det.open=true;
+  det.querySelector('.items').appendChild(makeLabel(ci,ii,cat,name));
+  document.getElementById('addName').value='';
+});
+
+update();
+</script>
+</body>
+</html>
